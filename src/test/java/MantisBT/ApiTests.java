@@ -6,6 +6,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,10 +52,22 @@ public class ApiTests {
     }
 
     @Test
-    public void updateBugStatusTest() { // failed by application error #1105, need to ask developer
+    public void createUpdateDeleteBugStatusTest() { //failed, need to ask developer about createResponse body
         String bugId = "0035030";//must be actual, check before test
         String bugStatus = "40"; //may be 10, 20, 30, 40, 50, 60, 70, 80
-        Response updateResponse = RestAssured
+        String summery = "Summary #1";
+        String description = "Bug report#1";
+
+        Response createResponse = RestAssured //APPLICATION ERROR #200 A required parameter to this page (project_id) was not found
+                .given()
+                .cookies(cookies)
+                .contentType("application/x-www-form-urlencoded") // try "text/plain" result the same
+                .body("project_id=1&category_id=1&summary=" + summery + "&" + description)
+                .post("https://academ-it.ru/mantisbt/bug_report.php?posted=1")
+                .andReturn();
+        createResponse.prettyPrint();
+
+        Response updateResponse = RestAssured // failed by application error #1105, need to ask developer
                 .given()
                 .cookies(cookies)
                 .contentType("application/x-www-form-urlencoded")
@@ -85,7 +98,8 @@ public class ApiTests {
 
     @Test
     public void updateRealNameInAccountPage() {
-        String newRealName = "Doris";
+        Timestamp timeStamp = new Timestamp(System.currentTimeMillis());
+        String newRealName = "Doris " + timeStamp;
         String newEmail = "Boris@mail.ru";
 
         Response updateRealNameResponse = RestAssured
